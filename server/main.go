@@ -6,6 +6,7 @@ import (
 	"github.com/hugo/go-socketio/db"
 	"github.com/hugo/go-socketio/router"
 	"github.com/hugo/go-socketio/user"
+	"github.com/hugo/go-socketio/ws"
 )
 
 func main() {
@@ -18,7 +19,11 @@ func main() {
 	userSvc := user.NewService(userRep)
 	userCtr := user.NewController(userSvc)
 
-	router.InitRouter(userCtr)
+	hub := ws.NewHub()
+	wsCtr := ws.NewController(hub)
+	go hub.Run()
+
+	router.InitRouter(userCtr, wsCtr)
 	err = router.Start("0.0.0.0:8080")
 	if err != nil {
 		log.Fatalf("could not start router: %s", err)
